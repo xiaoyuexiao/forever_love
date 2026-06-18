@@ -26,7 +26,7 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   line-height: 1.6;
-  cursor: url('assets/images/cursor.svg') 12 12, auto;
+  cursor: url('../assets/images/cursor.svg') 12 12, auto;
 }
 
 /* 鼠标残影 */
