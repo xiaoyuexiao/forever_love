@@ -140,6 +140,41 @@ function animateNumber(el, target) {
   requestAnimationFrame(update);
 }
 
+// ========== 鼠标残影效果 ==========
+function setupCursorTrail() {
+  const trailCount = 8;
+  const trails = [];
+
+  for (let i = 0; i < trailCount; i++) {
+    const trail = document.createElement('div');
+    trail.className = 'cursor-trail';
+    trail.style.width = `${12 - i * 1.2}px`;
+    trail.style.height = `${12 - i * 1.2}px`;
+    document.body.appendChild(trail);
+    trails.push({ el: trail, x: 0, y: 0 });
+  }
+
+  let mouseX = 0, mouseY = 0;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function animate() {
+    trails.forEach((trail, i) => {
+      const prev = i === 0 ? { x: mouseX, y: mouseY } : trails[i - 1];
+      trail.x += (prev.x - trail.x) * 0.35;
+      trail.y += (prev.y - trail.y) * 0.35;
+      trail.el.style.left = `${trail.x}px`;
+      trail.el.style.top = `${trail.y}px`;
+    });
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
 // ========== 初始化 ==========
 async function init() {
   const data = await loadData();
@@ -148,6 +183,7 @@ async function init() {
   renderStats(data.stats, data.entries[0].date);
   setupScrollAnimations();
   animateCounters();
+  setupCursorTrail();
 }
 
 init();
