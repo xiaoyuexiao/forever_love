@@ -170,8 +170,9 @@ function setupCursorTrail() {
       const prev = i === 0 ? { x: mouseX, y: mouseY } : trails[i - 1];
       trail.x += (prev.x - trail.x) * 0.35;
       trail.y += (prev.y - trail.y) * 0.35;
-      trail.el.style.left = `${trail.x}px`;
-      trail.el.style.top = `${trail.y}px`;
+      const offset = (20 - i * 2) / 2;
+      trail.el.style.left = `${trail.x - offset}px`;
+      trail.el.style.top = `${trail.y - offset}px`;
     });
     requestAnimationFrame(animate);
   }
