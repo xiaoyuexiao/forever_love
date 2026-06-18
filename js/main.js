@@ -142,14 +142,18 @@ function animateNumber(el, target) {
 
 // ========== 鼠标残影效果 ==========
 function setupCursorTrail() {
+  const heartSVG = `<svg xmlns='http://www.w3.org/2000/svg' width='SIZE' height='SIZE' viewBox='0 0 24 24'><path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' fill='%23FFB6C1' fill-opacity='OPACITY' stroke='%23FF69B4' stroke-opacity='OPACITY' stroke-width='1'/></svg>`;
   const trailCount = 8;
   const trails = [];
 
   for (let i = 0; i < trailCount; i++) {
+    const size = 20 - i * 2;
+    const opacity = 0.6 - i * 0.06;
     const trail = document.createElement('div');
     trail.className = 'cursor-trail';
-    trail.style.width = `${12 - i * 1.2}px`;
-    trail.style.height = `${12 - i * 1.2}px`;
+    trail.style.backgroundImage = `url("data:image/svg+xml,${heartSVG.replace(/SIZE/g, size).replace(/OPACITY/g, opacity)}")`;
+    trail.style.width = `${size}px`;
+    trail.style.height = `${size}px`;
     document.body.appendChild(trail);
     trails.push({ el: trail, x: 0, y: 0 });
   }
