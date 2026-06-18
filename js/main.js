@@ -18,9 +18,10 @@ function renderCover(meta) {
 function renderTimeline(entries) {
   const timeline = document.getElementById('timeline');
 
-  entries.forEach(entry => {
+  entries.forEach((entry, index) => {
+    const side = index % 2 === 0 ? 'left' : 'right';
     const entryEl = document.createElement('div');
-    entryEl.className = 'entry';
+    entryEl.className = `entry ${side}`;
 
     let mediaHTML = '';
     if (entry.media && entry.media.length > 0) {
@@ -39,10 +40,14 @@ function renderTimeline(entries) {
     }
 
     entryEl.innerHTML = `
-      <span class="entry-date">${entry.date}</span>
-      <h3 class="entry-title">${entry.title}</h3>
-      ${mediaHTML}
-      <p class="entry-content">${entry.content}</p>
+      <div class="entry-node"></div>
+      <div class="entry-connector"></div>
+      <div class="entry-card">
+        <span class="entry-date">${entry.date}</span>
+        <h3 class="entry-title">${entry.title}</h3>
+        ${mediaHTML}
+        <p class="entry-content">${entry.content}</p>
+      </div>
     `;
 
     timeline.appendChild(entryEl);
