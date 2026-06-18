@@ -2,7 +2,7 @@
   "meta": {
     "title": "我们的故事",
     "subtitle": "2024.01 - 2026.06",
-    "cover": "assets/images/cover.jpg",
+    "cover": "assets/images/cover.svg",
     "names": ["小明", "小红"]
   },
   "entries": [
