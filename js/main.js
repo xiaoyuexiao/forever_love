@@ -158,7 +158,7 @@ function setupCursorTrail() {
     trails.push({ el: trail, x: 0, y: 0 });
   }
 
-  let mouseX = 0, mouseY = 0;
+  let mouseX = -100, mouseY = -100;
 
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
