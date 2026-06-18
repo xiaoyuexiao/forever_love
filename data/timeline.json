@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "title": "我们的故事",
+    "subtitle": "2024.01 - 2026.06",
+    "cover": "assets/images/cover.jpg",
+    "names": ["小明", "小红"]
+  },
+  "entries": [
+    {
+      "date": "2024-01-15",
+      "title": "第一次见面",
+      "content": "那天在咖啡馆，阳光正好，你笑起来真好看。",
+      "media": [
+        { "type": "image", "src": "assets/images/first-meet.jpg", "alt": "第一次见面" }
+      ]
+    },
+    {
+      "date": "2024-03-14",
+      "title": "白色情人节",
+      "content": "第一次一起过节，你送了我一束满天星。",
+      "media": [
+        { "type": "image", "src": "assets/images/valentine.jpg", "alt": "白色情人节" }
+      ]
+    },
+    {
+      "date": "2024-08-20",
+      "title": "第一次旅行",
+      "content": "我们去了海边，看了日落，拍了好多照片。",
+      "media": [
+        { "type": "image", "src": "assets/images/trip-1.jpg", "alt": "海边" },
+        { "type": "video", "src": "assets/videos/sunset.mp4", "poster": "assets/images/sunset-cover.jpg" }
+      ]
+    }
+  ],
+  "stats": {
+    "days": 0,
+    "cities": 3,
+    "photos": 128,
+    "custom": [
+      { "label": "电影", "value": 42 },
+      { "label": "旅行", "value": 8 }
+    ]
+  }
+}
