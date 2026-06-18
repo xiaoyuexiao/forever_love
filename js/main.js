@@ -159,10 +159,15 @@ function setupCursorTrail() {
   }
 
   let mouseX = -100, mouseY = -100;
+  let isMoving = false;
+  let moveTimer = null;
 
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
+    isMoving = true;
+    clearTimeout(moveTimer);
+    moveTimer = setTimeout(() => { isMoving = false; }, 100);
   });
 
   function animate() {
@@ -173,6 +178,7 @@ function setupCursorTrail() {
       const offset = (20 - i * 2) / 2;
       trail.el.style.left = `${trail.x - offset}px`;
       trail.el.style.top = `${trail.y - offset}px`;
+      trail.el.style.opacity = isMoving ? (0.6 - i * 0.06) : '0';
     });
     requestAnimationFrame(animate);
   }

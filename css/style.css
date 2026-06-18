@@ -36,6 +36,7 @@ body {
   z-index: 9999;
   background-size: contain;
   background-repeat: no-repeat;
+  transition: opacity 0.15s ease;
 }
 
 /* ========== 封面区 ========== */
