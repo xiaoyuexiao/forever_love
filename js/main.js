@@ -23,6 +23,12 @@ function renderTimeline(entries) {
     const entryEl = document.createElement('div');
     entryEl.className = `entry ${side}`;
 
+    // 获取第一张图片作为节点图标
+    const firstImage = entry.media && entry.media.find(m => m.type === 'image');
+    const nodeHTML = firstImage
+      ? `<div class="entry-node"><img src="${firstImage.src}" alt="" class="node-thumb"></div>`
+      : `<div class="entry-node"></div>`;
+
     let mediaHTML = '';
     if (entry.media && entry.media.length > 0) {
       mediaHTML = entry.media.map(m => {
@@ -34,13 +40,13 @@ function renderTimeline(entries) {
           </div>`;
         }
         return `<div class="entry-media">
-          <img src="${m.src}" alt="${m.alt || ''}" loading="lazy">
+          <img src="${m.src}" alt="${m.alt || ''}" loading="lazy" class="clickable-img">
         </div>`;
       }).join('');
     }
 
     entryEl.innerHTML = `
-      <div class="entry-node"></div>
+      ${nodeHTML}
       <div class="entry-connector"></div>
       <div class="entry-card">
         <span class="entry-date">${entry.date}</span>
@@ -51,6 +57,28 @@ function renderTimeline(entries) {
     `;
 
     timeline.appendChild(entryEl);
+  });
+}
+
+// ========== 图片放大灯箱 ==========
+function setupLightbox() {
+  // 创建灯箱元素
+  const lightbox = document.createElement('div');
+  lightbox.className = 'lightbox';
+  lightbox.innerHTML = '<img class="lightbox-img" src="" alt="">';
+  document.body.appendChild(lightbox);
+
+  // 点击图片打开灯箱
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('clickable-img')) {
+      lightbox.querySelector('.lightbox-img').src = e.target.src;
+      lightbox.classList.add('active');
+    }
+  });
+
+  // 点击灯箱关闭
+  lightbox.addEventListener('click', () => {
+    lightbox.classList.remove('active');
   });
 }
 
@@ -196,6 +224,7 @@ async function init() {
   setupScrollAnimations();
   animateCounters();
   setupCursorTrail();
+  setupLightbox();
 }
 
 init();
