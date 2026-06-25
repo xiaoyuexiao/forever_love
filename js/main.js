@@ -23,11 +23,17 @@ function renderTimeline(entries) {
     const entryEl = document.createElement('div');
     entryEl.className = `entry ${side}`;
 
-    // 获取第一张图片作为节点图标
-    const firstImage = entry.media && entry.media.find(m => m.type === 'image');
-    const nodeHTML = firstImage
-      ? `<div class="entry-node"><img src="${firstImage.src}" alt="" class="node-thumb"></div>`
-      : `<div class="entry-node"></div>`;
+    // 获取所有图片作为节点小相册
+    const images = entry.media ? entry.media.filter(m => m.type === 'image') : [];
+    let nodeHTML = '<div class="entry-node">';
+    if (images.length > 0) {
+      nodeHTML += '<div class="node-album">';
+      images.slice(0, 4).forEach(img => {
+        nodeHTML += `<img src="${img.src}" alt="" class="node-thumb">`;
+      });
+      nodeHTML += '</div>';
+    }
+    nodeHTML += '</div>';
 
     let mediaHTML = '';
     if (entry.media && entry.media.length > 0) {
