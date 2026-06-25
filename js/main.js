@@ -64,23 +64,78 @@ function renderTimeline(entries) {
 
 // ========== 图片放大灯箱 ==========
 function setupLightbox() {
+  let currentImages = [];
+  let currentIndex = 0;
+
   // 创建灯箱元素
   const lightbox = document.createElement('div');
   lightbox.className = 'lightbox';
-  lightbox.innerHTML = '<img class="lightbox-img" src="" alt="">';
+  lightbox.innerHTML = `
+    <span class="lightbox-close">&times;</span>
+    <span class="lightbox-prev">&#10094;</span>
+    <img class="lightbox-img" src="" alt="">
+    <span class="lightbox-next">&#10095;</span>
+  `;
   document.body.appendChild(lightbox);
+
+  const lightboxImg = lightbox.querySelector('.lightbox-img');
+
+  function showImage() {
+    lightboxImg.src = currentImages[currentIndex];
+  }
 
   // 点击图片打开灯箱
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('clickable-img')) {
-      lightbox.querySelector('.lightbox-img').src = e.target.src;
+      // 获取同一卡片内的所有图片
+      const card = e.target.closest('.entry-card');
+      const imgs = card.querySelectorAll('.clickable-img');
+      currentImages = Array.from(imgs).map(img => img.src);
+      currentIndex = currentImages.indexOf(e.target.src);
+      showImage();
       lightbox.classList.add('active');
     }
   });
 
-  // 点击灯箱关闭
-  lightbox.addEventListener('click', () => {
+  // 关闭
+  lightbox.querySelector('.lightbox-close').addEventListener('click', (e) => {
+    e.stopPropagation();
     lightbox.classList.remove('active');
+  });
+
+  // 上一张
+  lightbox.querySelector('.lightbox-prev').addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+    showImage();
+  });
+
+  // 下一张
+  lightbox.querySelector('.lightbox-next').addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentIndex = (currentIndex + 1) % currentImages.length;
+    showImage();
+  });
+
+  // 点击背景关闭
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) {
+      lightbox.classList.remove('active');
+    }
+  });
+
+  // 键盘左右切换
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'ArrowLeft') {
+      currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+      showImage();
+    } else if (e.key === 'ArrowRight') {
+      currentIndex = (currentIndex + 1) % currentImages.length;
+      showImage();
+    } else if (e.key === 'Escape') {
+      lightbox.classList.remove('active');
+    }
   });
 }
 
