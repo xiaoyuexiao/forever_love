@@ -23,36 +23,26 @@ function renderTimeline(entries) {
     const entryEl = document.createElement('div');
     entryEl.className = `entry ${side}`;
 
-    // 获取所有图片作为节点小相册
-    const images = entry.media ? entry.media.filter(m => m.type === 'image') : [];
-    let nodeHTML = '<div class="entry-node">';
-    if (images.length > 0) {
-      nodeHTML += '<div class="node-album">';
-      images.slice(0, 4).forEach(img => {
-        nodeHTML += `<img src="${img.src}" alt="" class="node-thumb">`;
-      });
-      nodeHTML += '</div>';
-    }
-    nodeHTML += '</div>';
-
     let mediaHTML = '';
     if (entry.media && entry.media.length > 0) {
-      mediaHTML = entry.media.map(m => {
+      mediaHTML = '<div class="media-grid">';
+      mediaHTML += entry.media.map(m => {
         if (m.type === 'video') {
-          return `<div class="entry-media">
+          return `<div class="media-item">
             <video controls poster="${m.poster || ''}" preload="metadata">
               <source src="${m.src}" type="video/mp4">
             </video>
           </div>`;
         }
-        return `<div class="entry-media">
+        return `<div class="media-item">
           <img src="${m.src}" alt="${m.alt || ''}" loading="lazy" class="clickable-img">
         </div>`;
       }).join('');
+      mediaHTML += '</div>';
     }
 
     entryEl.innerHTML = `
-      ${nodeHTML}
+      <div class="entry-node"></div>
       <div class="entry-connector"></div>
       <div class="entry-card">
         <span class="entry-date">${entry.date}</span>
