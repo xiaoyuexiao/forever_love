@@ -142,13 +142,20 @@ body {
 .entry-node {
   position: absolute;
   top: 20px;
-  width: 16px;
-  height: 16px;
+  width: 50px;
+  height: 50px;
   background: var(--color-accent);
   border: 3px solid var(--color-bg);
   border-radius: 50%;
   box-shadow: 0 0 0 3px var(--color-accent);
   z-index: 1;
+  overflow: hidden;
+}
+
+.node-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* 图片放大灯箱 */
@@ -344,12 +351,12 @@ body {
 
   /* 移动端：时间轴移到左侧 */
   .timeline::before {
-    left: 20px;
+    left: 30px;
   }
 
   .entry {
-    width: calc(100% - 50px);
-    margin-left: 50px !important;
+    width: calc(100% - 70px);
+    margin-left: 70px !important;
     transform: translateY(30px) !important;
   }
 
@@ -359,16 +366,16 @@ body {
 
   .entry.left .entry-node,
   .entry.right .entry-node {
-    left: -38px;
+    left: -55px;
     right: auto;
     transform: translateX(0);
   }
 
   .entry.left .entry-connector,
   .entry.right .entry-connector {
-    left: -22px;
+    left: -8px;
     right: auto;
-    width: 22px;
+    width: 8px;
   }
 
   .entry-title {

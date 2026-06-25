@@ -41,8 +41,14 @@ function renderTimeline(entries) {
       mediaHTML += '</div>';
     }
 
+    // 节点显示第一张图片
+    const firstImage = entry.media && entry.media.find(m => m.type === 'image');
+    const nodeHTML = firstImage
+      ? `<div class="entry-node"><img src="${firstImage.src}" alt="" class="node-thumb"></div>`
+      : `<div class="entry-node"></div>`;
+
     entryEl.innerHTML = `
-      <div class="entry-node"></div>
+      ${nodeHTML}
       <div class="entry-connector"></div>
       <div class="entry-card">
         <span class="entry-date">${entry.date}</span>
