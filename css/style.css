@@ -29,6 +29,38 @@ body {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' fill='%23FFB6C1' stroke='%23FF69B4' stroke-width='1'/%3E%3C/svg%3E") 12 12, auto;
 }
 
+/* ========== 背景音乐 ========== */
+.music-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  color: var(--color-text);
+  transition: box-shadow 0.3s;
+}
+
+.music-btn:hover {
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.25);
+}
+
+.music-btn.playing svg {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* 鼠标残影 */
 .cursor-trail {
   position: fixed;
@@ -45,7 +77,6 @@ body {
   height: 100vh;
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,11 +211,24 @@ body {
   pointer-events: auto;
 }
 
-.lightbox-img {
-  max-width: 85%;
-  max-height: 85%;
+.lightbox-img,
+.lightbox-video {
+  max-width: 90vw;
+  max-height: 90vh;
   border-radius: var(--radius);
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease;
+  object-fit: contain;
+  cursor: grab;
+  user-select: none;
+}
+
+.lightbox-img.dragging {
+  transition: none;
+}
+
+.lightbox-video {
+  display: none;
 }
 
 .lightbox-close {
@@ -299,10 +343,13 @@ body {
 }
 
 .media-item {
+  position: relative;
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 8px;
   box-shadow: var(--shadow);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 80px;
 }
 
 .media-item img {
@@ -322,6 +369,24 @@ body {
   height: 100%;
   object-fit: cover;
   border-radius: 8px;
+}
+
+.play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--color-text);
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .entry-content {

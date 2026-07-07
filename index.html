@@ -4,9 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>我们的故事</title>
-  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body>
+  <!-- 背景音乐 -->
+  <div id="music-btn" class="music-btn">
+    <svg viewBox="0 0 24 24" width="24" height="24">
+      <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" fill="currentColor"/>
+    </svg>
+    <audio id="bgm" loop preload="auto">
+      <source src="assets/music/wo_hai_xiang_ta.mp3" type="audio/mpeg">
+    </audio>
+  </div>
   <!-- 封面区 -->
   <section id="cover" class="cover">
     <div class="cover-overlay">
@@ -32,6 +41,6 @@
     </div>
   </section>
 
-  <script src="js/main.js?v=2"></script>
+  <script src="js/main.js?v=12"></script>
 </body>
 </html>

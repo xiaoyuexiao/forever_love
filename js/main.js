@@ -29,13 +29,14 @@ function renderTimeline(entries) {
       mediaHTML += entry.media.map(m => {
         if (m.type === 'video') {
           return `<div class="media-item">
-            <video controls poster="${m.poster || ''}" preload="metadata">
+            <video poster="${m.poster || ''}" preload="metadata">
               <source src="${m.src}" type="video/mp4">
             </video>
+            <span class="play-icon">&#9654;</span>
           </div>`;
         }
         return `<div class="media-item">
-          <img src="${m.src}" alt="${m.alt || ''}" loading="lazy" class="clickable-img">
+          <img src="${m.thumb || m.src}" data-full="${m.src}" alt="${m.alt || ''}" loading="lazy" decoding="async" class="clickable-img">
         </div>`;
       }).join('');
       mediaHTML += '</div>';
@@ -44,7 +45,7 @@ function renderTimeline(entries) {
     // 节点显示第一张图片
     const firstImage = entry.media && entry.media.find(m => m.type === 'image');
     const nodeHTML = firstImage
-      ? `<div class="entry-node"><img src="${firstImage.src}" alt="" class="node-thumb"></div>`
+      ? `<div class="entry-node"><img src="${firstImage.thumb || firstImage.src}" alt="" loading="lazy" decoding="async" class="node-thumb"></div>`
       : `<div class="entry-node"></div>`;
 
     entryEl.innerHTML = `
@@ -62,10 +63,14 @@ function renderTimeline(entries) {
   });
 }
 
-// ========== 图片放大灯箱 ==========
+// ========== 媒体放大灯箱 ==========
 function setupLightbox() {
-  let currentImages = [];
+  let currentMedia = [];
   let currentIndex = 0;
+  let scale = 1;
+  let posX = 0, posY = 0;
+  let dragStartX = 0, dragStartY = 0;
+  let isDragging = false;
 
   // 创建灯箱元素
   const lightbox = document.createElement('div');
@@ -73,54 +78,96 @@ function setupLightbox() {
   lightbox.innerHTML = `
     <span class="lightbox-close">&times;</span>
     <span class="lightbox-prev">&#10094;</span>
-    <img class="lightbox-img" src="" alt="">
+    <div class="lightbox-content">
+      <img class="lightbox-img" src="" alt="">
+      <video class="lightbox-video" src="" controls></video>
+    </div>
     <span class="lightbox-next">&#10095;</span>
   `;
   document.body.appendChild(lightbox);
 
   const lightboxImg = lightbox.querySelector('.lightbox-img');
+  const lightboxVideo = lightbox.querySelector('.lightbox-video');
 
-  function showImage() {
-    lightboxImg.src = currentImages[currentIndex];
+  function resetTransform() {
+    scale = 1;
+    posX = 0;
+    posY = 0;
+    lightboxImg.style.transform = `scale(${scale}) translate(0px, 0px)`;
   }
 
-  // 点击图片打开灯箱
-  document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('clickable-img')) {
-      // 获取同一卡片内的所有图片
-      const card = e.target.closest('.entry-card');
-      const imgs = card.querySelectorAll('.clickable-img');
-      currentImages = Array.from(imgs).map(img => img.src);
-      currentIndex = currentImages.indexOf(e.target.src);
-      showImage();
-      lightbox.classList.add('active');
+  function updateTransform() {
+    lightboxImg.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
+  }
+
+  function showMedia() {
+    resetTransform();
+    const item = currentMedia[currentIndex];
+    if (item.type === 'video') {
+      lightboxImg.style.display = 'none';
+      lightboxVideo.style.display = 'block';
+      lightboxVideo.src = item.src;
+      lightboxVideo.play();
+    } else {
+      lightboxVideo.style.display = 'none';
+      lightboxVideo.pause();
+      lightboxImg.style.display = 'block';
+      lightboxImg.src = item.src;
     }
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('active');
+    lightboxVideo.pause();
+    lightboxVideo.src = '';
+    resetTransform();
+  }
+
+  // 点击图片或视频打开灯箱
+  document.addEventListener('click', (e) => {
+    const mediaItem = e.target.closest('.media-item');
+    if (!mediaItem) return;
+
+    // 获取同一卡片内的所有媒体项
+    const card = mediaItem.closest('.entry-card');
+    const items = card.querySelectorAll('.media-item');
+    currentMedia = Array.from(items).map(item => {
+      const img = item.querySelector('img');
+      const video = item.querySelector('video');
+      if (video) {
+        return { type: 'video', src: video.querySelector('source')?.src || video.src };
+      }
+      return { type: 'image', src: img.dataset.full || img.src };
+    });
+    currentIndex = Array.from(items).indexOf(mediaItem);
+    showMedia();
+    lightbox.classList.add('active');
   });
 
   // 关闭
   lightbox.querySelector('.lightbox-close').addEventListener('click', (e) => {
     e.stopPropagation();
-    lightbox.classList.remove('active');
+    closeLightbox();
   });
 
-  // 上一张
+  // 上一个
   lightbox.querySelector('.lightbox-prev').addEventListener('click', (e) => {
     e.stopPropagation();
-    currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
-    showImage();
+    currentIndex = (currentIndex - 1 + currentMedia.length) % currentMedia.length;
+    showMedia();
   });
 
-  // 下一张
+  // 下一个
   lightbox.querySelector('.lightbox-next').addEventListener('click', (e) => {
     e.stopPropagation();
-    currentIndex = (currentIndex + 1) % currentImages.length;
-    showImage();
+    currentIndex = (currentIndex + 1) % currentMedia.length;
+    showMedia();
   });
 
   // 点击背景关闭
   lightbox.addEventListener('click', (e) => {
     if (e.target === lightbox) {
-      lightbox.classList.remove('active');
+      closeLightbox();
     }
   });
 
@@ -128,14 +175,73 @@ function setupLightbox() {
   document.addEventListener('keydown', (e) => {
     if (!lightbox.classList.contains('active')) return;
     if (e.key === 'ArrowLeft') {
-      currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
-      showImage();
+      currentIndex = (currentIndex - 1 + currentMedia.length) % currentMedia.length;
+      showMedia();
     } else if (e.key === 'ArrowRight') {
-      currentIndex = (currentIndex + 1) % currentImages.length;
-      showImage();
+      currentIndex = (currentIndex + 1) % currentMedia.length;
+      showMedia();
     } else if (e.key === 'Escape') {
-      lightbox.classList.remove('active');
+      closeLightbox();
     }
+  });
+
+  // 滚轮缩放图片
+  lightbox.addEventListener('wheel', (e) => {
+    if (!lightbox.classList.contains('active')) return;
+    if (lightboxImg.style.display === 'none') return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.15 : 0.15;
+    scale = Math.min(Math.max(0.2, scale + delta), 5);
+    if (scale <= 1) { posX = 0; posY = 0; }
+    updateTransform();
+  });
+
+  // 拖动图片
+  lightboxImg.addEventListener('mousedown', (e) => {
+    if (scale <= 1) return;
+    e.preventDefault();
+    isDragging = true;
+    dragStartX = e.clientX - posX * scale;
+    dragStartY = e.clientY - posY * scale;
+    lightboxImg.classList.add('dragging');
+    lightboxImg.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    posX = (e.clientX - dragStartX) / scale;
+    posY = (e.clientY - dragStartY) / scale;
+    updateTransform();
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    lightboxImg.classList.remove('dragging');
+    lightboxImg.style.cursor = 'grab';
+  });
+
+  // 触摸拖动
+  lightboxImg.addEventListener('touchstart', (e) => {
+    if (scale <= 1) return;
+    const t = e.touches[0];
+    isDragging = true;
+    dragStartX = t.clientX - posX * scale;
+    dragStartY = t.clientY - posY * scale;
+    lightboxImg.classList.add('dragging');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const t = e.touches[0];
+    posX = (t.clientX - dragStartX) / scale;
+    posY = (t.clientY - dragStartY) / scale;
+    updateTransform();
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    isDragging = false;
+    lightboxImg.classList.remove('dragging');
   });
 }
 
@@ -272,6 +378,29 @@ function setupCursorTrail() {
   animate();
 }
 
+// ========== 背景音乐 ==========
+function setupMusic() {
+  const btn = document.getElementById('music-btn');
+  const audio = document.getElementById('bgm');
+
+  btn.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play();
+      btn.classList.add('playing');
+    } else {
+      audio.pause();
+      btn.classList.remove('playing');
+    }
+  });
+
+  // 自动播放
+  audio.play().then(() => {
+    btn.classList.add('playing');
+  }).catch(() => {
+    // 浏览器阻止自动播放，用户需手动点击
+  });
+}
+
 // ========== 初始化 ==========
 async function init() {
   const data = await loadData();
@@ -282,6 +411,7 @@ async function init() {
   animateCounters();
   setupCursorTrail();
   setupLightbox();
+  setupMusic();
 }
 
 init();
