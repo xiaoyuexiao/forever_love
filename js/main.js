@@ -137,7 +137,7 @@ function setupLightbox() {
       if (video) {
         return { type: 'video', src: video.querySelector('source')?.src || video.src };
       }
-      return { type: 'image', src: img.src };
+      return { type: 'image', src: img.dataset.full || img.src };
     });
     currentIndex = Array.from(items).indexOf(mediaItem);
     showMedia();
