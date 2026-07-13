@@ -401,9 +401,81 @@ function setupMusic() {
   });
 }
 
+// ========== 图片预加载 ==========
+function preloadImage(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(url);
+    img.onerror = () => resolve(url);
+    img.src = url;
+  });
+}
+
+function preloadImages(urls, onProgress) {
+  let loaded = 0;
+  const total = urls.length;
+  const concurrency = 6;
+
+  return new Promise((resolve) => {
+    if (total === 0) { resolve(); return; }
+
+    let index = 0;
+    function next() {
+      if (index >= total) return;
+      const i = index++;
+      preloadImage(urls[i]).then(() => {
+        loaded++;
+        if (onProgress) onProgress(loaded, total);
+        if (loaded === total) resolve();
+        else next();
+      });
+    }
+
+    for (let c = 0; c < Math.min(concurrency, total); c++) next();
+  });
+}
+
+function collectImageUrls(entries) {
+  const thumbs = [];
+  const originals = [];
+  entries.forEach(e => {
+    e.media.forEach(m => {
+      if (m.type === 'image') {
+        thumbs.push(m.thumb || m.src);
+        originals.push(m.src);
+      }
+    });
+  });
+  return { thumbs, originals };
+}
+
 // ========== 初始化 ==========
 async function init() {
   const data = await loadData();
+  const { thumbs, originals } = collectImageUrls(data.entries);
+
+  const loader = document.getElementById('loader');
+  const bar = document.getElementById('loader-bar');
+  const text = document.getElementById('loader-text');
+
+  // 第一阶段：加载前 100 张缩略图 + 前 10 张原图
+  const phase1Thumbs = thumbs.slice(0, 100);
+  const phase1Orig = originals.slice(0, 10);
+  const phase1 = [...new Set([...phase1Thumbs, ...phase1Orig])];
+  const phase1Total = phase1.length;
+
+  let phase1Loaded = 0;
+  await preloadImages(phase1, (loaded) => {
+    phase1Loaded = loaded;
+    const pct = Math.round((loaded / phase1Total) * 100);
+    bar.style.width = pct + '%';
+    text.textContent = `加载中 ${pct}%`;
+  });
+
+  // 加载完成，隐藏加载屏，渲染页面
+  loader.classList.add('fade-out');
+  setTimeout(() => loader.remove(), 600);
+
   renderCover(data.meta);
   renderTimeline(data.entries);
   renderStats(data.stats, data.entries[0].date);
@@ -412,6 +484,12 @@ async function init() {
   setupCursorTrail();
   setupLightbox();
   setupMusic();
+
+  // 第二阶段：后台按时间线顺序预加载剩余图片
+  const remaining = [...new Set([...thumbs.slice(100), ...originals.slice(10)])].filter(
+    u => !phase1.includes(u)
+  );
+  preloadImages(remaining);
 }
 
 init();
