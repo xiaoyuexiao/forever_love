@@ -413,8 +413,6 @@ body {
   overflow: hidden;
   border-radius: 8px;
   box-shadow: var(--shadow);
-  content-visibility: auto;
-  contain-intrinsic-size: auto 80px;
 }
 
 .media-item img {
