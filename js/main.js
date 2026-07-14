@@ -71,6 +71,7 @@ function setupLightbox() {
   let posX = 0, posY = 0;
   let dragStartX = 0, dragStartY = 0;
   let isDragging = false;
+  let loadSeq = 0; // 防止快速切换时显示旧图
 
   // 创建灯箱元素
   const lightbox = document.createElement('div');
@@ -79,6 +80,7 @@ function setupLightbox() {
     <span class="lightbox-close">&times;</span>
     <span class="lightbox-prev">&#10094;</span>
     <div class="lightbox-content">
+      <div class="lightbox-spinner"></div>
       <img class="lightbox-img" src="" alt="">
       <video class="lightbox-video" src="" controls></video>
     </div>
@@ -88,6 +90,7 @@ function setupLightbox() {
 
   const lightboxImg = lightbox.querySelector('.lightbox-img');
   const lightboxVideo = lightbox.querySelector('.lightbox-video');
+  const spinner = lightbox.querySelector('.lightbox-spinner');
 
   function resetTransform() {
     scale = 1;
@@ -101,25 +104,47 @@ function setupLightbox() {
   }
 
   function showMedia() {
+    const seq = ++loadSeq;
     resetTransform();
     const item = currentMedia[currentIndex];
+
+    // 先隐藏所有内容，显示 spinner
+    lightboxImg.style.display = 'none';
+    lightboxVideo.style.display = 'none';
+    lightboxVideo.pause();
+    spinner.classList.add('show');
+
     if (item.type === 'video') {
-      lightboxImg.style.display = 'none';
+      spinner.classList.remove('show');
       lightboxVideo.style.display = 'block';
       lightboxVideo.src = item.src;
       lightboxVideo.play();
     } else {
-      lightboxVideo.style.display = 'none';
-      lightboxVideo.pause();
-      lightboxImg.style.display = 'block';
-      lightboxImg.src = item.src;
+      // 预加载原图，加载完再显示
+      const preloader = new Image();
+      preloader.onload = () => {
+        if (seq !== loadSeq) return; // 已切换到其他图片，忽略
+        spinner.classList.remove('show');
+        lightboxImg.src = item.src;
+        lightboxImg.style.display = 'block';
+      };
+      preloader.onerror = () => {
+        if (seq !== loadSeq) return;
+        spinner.classList.remove('show');
+        lightboxImg.src = item.src;
+        lightboxImg.style.display = 'block';
+      };
+      preloader.src = item.src;
     }
   }
 
   function closeLightbox() {
+    loadSeq++; // 取消正在进行的加载
     lightbox.classList.remove('active');
     lightboxVideo.pause();
     lightboxVideo.src = '';
+    lightboxImg.src = '';
+    spinner.classList.remove('show');
     resetTransform();
   }
 
