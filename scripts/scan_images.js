@@ -45,7 +45,12 @@ for (const folder of folders) {
       src: `assets/images/${folder}/${f}`,
       alt: ''
     };
-    if (!isVideo) {
+    if (isVideo) {
+      const posterFile = path.join(folderPath, 'thumbs', path.basename(f, ext) + '.jpg');
+      if (fs.existsSync(posterFile)) {
+        item.poster = `assets/images/${folder}/thumbs/${path.basename(f, ext)}.jpg`;
+      }
+    } else {
       const thumbPath = path.join(folderPath, 'thumbs', f);
       if (fs.existsSync(thumbPath)) {
         item.thumb = `assets/images/${folder}/thumbs/${f}`;

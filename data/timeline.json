@@ -371,7 +371,8 @@
         {
           "type": "video",
           "src": "assets/images/kdc_2023-04-05/6525b490104ac50886c6d6fbc2eeb22d.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/kdc_2023-04-05/thumbs/6525b490104ac50886c6d6fbc2eeb22d.jpg"
         },
         {
           "type": "image",
@@ -820,17 +821,20 @@
         {
           "type": "video",
           "src": "assets/images/gn_2024-02-15/6798d9c1a7edf673a55a7c0f6c5cab4d.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/gn_2024-02-15/thumbs/6798d9c1a7edf673a55a7c0f6c5cab4d.jpg"
         },
         {
           "type": "video",
           "src": "assets/images/gn_2024-02-15/a08d5dd7db94f723f4b85c937c95bb30.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/gn_2024-02-15/thumbs/a08d5dd7db94f723f4b85c937c95bb30.jpg"
         },
         {
           "type": "video",
           "src": "assets/images/gn_2024-02-15/a398cc0e6498ea1700f5b693060cfd66.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/gn_2024-02-15/thumbs/a398cc0e6498ea1700f5b693060cfd66.jpg"
         },
         {
           "type": "image",
@@ -1242,7 +1246,8 @@
         {
           "type": "video",
           "src": "assets/images/qc_2024-08-31/5e98ae566321be74b32aefef756f29fc.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/qc_2024-08-31/thumbs/5e98ae566321be74b32aefef756f29fc.jpg"
         },
         {
           "type": "image",
@@ -1414,7 +1419,8 @@
         {
           "type": "video",
           "src": "assets/images/kfz_2024-11-02/b249006943b6f09ae4114f0cbc9d1c12.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/kfz_2024-11-02/thumbs/b249006943b6f09ae4114f0cbc9d1c12.jpg"
         }
       ]
     },
@@ -2138,22 +2144,26 @@
         {
           "type": "video",
           "src": "assets/images/cx_2025-06-14/2601b3613181491560a10b2558de7b8e.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/cx_2025-06-14/thumbs/2601b3613181491560a10b2558de7b8e.jpg"
         },
         {
           "type": "video",
           "src": "assets/images/cx_2025-06-14/2d9a4ed0a842dfb35d2b02d03b39fd9d.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/cx_2025-06-14/thumbs/2d9a4ed0a842dfb35d2b02d03b39fd9d.jpg"
         },
         {
           "type": "video",
           "src": "assets/images/cx_2025-06-14/6f7e1d2546b667a1621613e9e4964cc7.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/cx_2025-06-14/thumbs/6f7e1d2546b667a1621613e9e4964cc7.jpg"
         },
         {
           "type": "video",
           "src": "assets/images/cx_2025-06-14/d4e840c962a06820dd92a8310578bddd.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/cx_2025-06-14/thumbs/d4e840c962a06820dd92a8310578bddd.jpg"
         },
         {
           "type": "image",
@@ -2909,27 +2919,32 @@
         {
           "type": "video",
           "src": "assets/images/qh_2025-06-21/10e5ae0588d4fd0ea318bd752747a5ed.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/qh_2025-06-21/thumbs/10e5ae0588d4fd0ea318bd752747a5ed.jpg"
         },
         {
           "type": "video",
           "src": "assets/images/qh_2025-06-21/396f72d6dd74c04f4b80a9348370c893.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/qh_2025-06-21/thumbs/396f72d6dd74c04f4b80a9348370c893.jpg"
         },
         {
           "type": "video",
           "src": "assets/images/qh_2025-06-21/3df6eda3f625d87cccada4705b453278.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/qh_2025-06-21/thumbs/3df6eda3f625d87cccada4705b453278.jpg"
         },
         {
           "type": "video",
           "src": "assets/images/qh_2025-06-21/502afb521d32405315a6cdf80f2ceb17.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/qh_2025-06-21/thumbs/502afb521d32405315a6cdf80f2ceb17.jpg"
         },
         {
           "type": "video",
           "src": "assets/images/qh_2025-06-21/a75ccf876fa762789da5b2f7397942fd.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/qh_2025-06-21/thumbs/a75ccf876fa762789da5b2f7397942fd.jpg"
         },
         {
           "type": "image",
@@ -3169,7 +3184,8 @@
         {
           "type": "video",
           "src": "assets/images/my-2025-08-16/2b51dc57d1f598b294f7e227ea0c5eb8.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/my-2025-08-16/thumbs/2b51dc57d1f598b294f7e227ea0c5eb8.jpg"
         },
         {
           "type": "image",
@@ -3255,7 +3271,8 @@
         {
           "type": "video",
           "src": "assets/images/fx_2025-08-30/e70b2752bbd7934ee43bb4573a42764a.mp4",
-          "alt": ""
+          "alt": "",
+          "poster": "assets/images/fx_2025-08-30/thumbs/e70b2752bbd7934ee43bb4573a42764a.jpg"
         },
         {
           "type": "image",
