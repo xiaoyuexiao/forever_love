@@ -20,39 +20,29 @@
 
 .loader-inner {
   text-align: center;
-}
-
-.loader-heart {
-  font-size: 3rem;
-  color: #FFB6C1;
-  animation: heartbeat 1.2s ease-in-out infinite;
-}
-
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  width: 280px;
 }
 
 .loader-bar-wrap {
-  width: 200px;
-  height: 4px;
+  width: 100%;
+  height: 6px;
   background: var(--color-accent);
-  border-radius: 2px;
-  margin: 20px auto;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .loader-bar {
   height: 100%;
   width: 0%;
-  background: #FFB6C1;
-  border-radius: 2px;
+  background: linear-gradient(90deg, #FFB6C1, #FF69B4);
+  border-radius: 3px;
   transition: width 0.3s ease;
 }
 
 .loader-text {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--color-text-light);
+  margin-top: 12px;
 }
 
 /* ========== CSS Custom Properties ========== */

@@ -464,13 +464,17 @@ async function init() {
   const phase1 = [...new Set([...phase1Thumbs, ...phase1Orig])];
   const phase1Total = phase1.length;
 
-  let phase1Loaded = 0;
-  await preloadImages(phase1, (loaded) => {
-    phase1Loaded = loaded;
+  // 8 秒超时：到时间直接进入页面
+  const timeout = new Promise((resolve) => setTimeout(resolve, 8000));
+  const loading = preloadImages(phase1, (loaded) => {
     const pct = Math.round((loaded / phase1Total) * 100);
     bar.style.width = pct + '%';
     text.textContent = `加载中 ${pct}%`;
   });
+
+  await Promise.race([loading, timeout]);
+  // 超时则进度条补到 100%
+  bar.style.width = '100%';
 
   // 加载完成，隐藏加载屏，渲染页面
   loader.classList.add('fade-out');
