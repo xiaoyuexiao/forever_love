@@ -37,6 +37,19 @@ function renderCover(meta, entries) {
   const maxCount = words[0]?.[1] || 1;
   const placed = [];
 
+  // 获取卡片区域作为碰撞禁区（带一点间距）
+  const overlay = cover.querySelector('.cover-overlay');
+  const coverRect = cover.getBoundingClientRect();
+  const cardRect = overlay.getBoundingClientRect();
+  const margin = 20;
+  const card = {
+    x: cardRect.left - coverRect.left - margin,
+    y: cardRect.top - coverRect.top - margin,
+    w: cardRect.width + margin * 2,
+    h: cardRect.height + margin * 2
+  };
+  placed.push(card);
+
   function collides(x, y, w, h) {
     for (const r of placed) {
       if (x < r.x + r.w && x + w > r.x && y < r.y + r.h && y + h > r.y) return true;
@@ -46,8 +59,8 @@ function renderCover(meta, entries) {
 
   // 内边距，PC端词云集中在中心
   const isPC = W > 768;
-  const padX = isPC ? W * 0.2 : 0;
-  const padY = isPC ? H * 0.2 : 0;
+  const padX = isPC ? W * 0.15 : 0;
+  const padY = isPC ? H * 0.15 : 0;
 
   words.forEach(([word, count], i) => {
     const ratio = 0.4 + (count / maxCount) * 0.6;
