@@ -8,6 +8,11 @@ async function loadData() {
 function renderCover(meta, entries) {
   const cover = document.getElementById('cover');
 
+  // 先设置卡片内容，让卡片有正确的尺寸
+  document.querySelector('.cover-title').textContent = meta.title;
+  document.querySelector('.cover-subtitle').textContent = meta.subtitle;
+  document.querySelector('.cover-names').textContent = meta.names.join(' & ');
+
   // 词云数据：优先使用配置，否则从 content 提取
   let words;
   if (meta.wordcloud && meta.wordcloud.length > 0) {
@@ -41,7 +46,7 @@ function renderCover(meta, entries) {
   const overlay = cover.querySelector('.cover-overlay');
   const coverRect = cover.getBoundingClientRect();
   const cardRect = overlay.getBoundingClientRect();
-  const margin = 20;
+  const margin = 24;
   const card = {
     x: cardRect.left - coverRect.left - margin,
     y: cardRect.top - coverRect.top - margin,
@@ -94,10 +99,6 @@ function renderCover(meta, entries) {
   });
 
   cover.style.backgroundImage = `url(${canvas.toDataURL()})`;
-
-  document.querySelector('.cover-title').textContent = meta.title;
-  document.querySelector('.cover-subtitle').textContent = meta.subtitle;
-  document.querySelector('.cover-names').textContent = meta.names.join(' & ');
 }
 
 // ========== 时间线渲染 ==========
