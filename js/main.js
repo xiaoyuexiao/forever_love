@@ -5,9 +5,72 @@ async function loadData() {
 }
 
 // ========== 封面渲染 ==========
-function renderCover(meta) {
+function renderCover(meta, entries) {
   const cover = document.getElementById('cover');
-  cover.style.backgroundImage = `url(${meta.cover})`;
+
+  // 从 content 提取词频
+  const text = entries.map(e => e.content).join('');
+  const segs = text.match(/[一-龥]{2,4}/g) || [];
+  const stopWords = new Set(['我们','一个','一起','但是','这个','时候','觉得','还是','就是','没有','已经','什么','他们','可以','不是','因为','所以','今天','一些','到了','很多','你们','我的','你的','他的','她的','看到','到了','然后','之后','以后','开始','出来','起来','回来','下去','上来','这是','那是','那些','这些','自己','大家','比较','可能','应该','知道','觉得','那么','这样','那样','怎么','为什么','什么样','喜欢','照片','拍了','分享']);
+  const freq = {};
+  segs.forEach(w => {
+    if (!stopWords.has(w)) freq[w] = (freq[w] || 0) + 1;
+  });
+  const words = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 80);
+
+  // 绘制词云 canvas
+  const canvas = document.createElement('canvas');
+  const W = cover.offsetWidth || window.innerWidth;
+  const H = cover.offsetHeight || window.innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FFF8F0';
+  ctx.fillRect(0, 0, W, H);
+
+  const colors = ['#8B6914', '#C4A882', '#FFB6C1', '#FF69B4', '#D4A574', '#B8860B', '#CD853F', '#DAA520'];
+  const maxCount = words[0]?.[1] || 1;
+  const placed = [];
+
+  function collides(x, y, w, h) {
+    for (const r of placed) {
+      if (x < r.x + r.w && x + w > r.x && y < r.y + r.h && y + h > r.y) return true;
+    }
+    return false;
+  }
+
+  words.forEach(([word, count], i) => {
+    const ratio = 0.4 + (count / maxCount) * 0.6;
+    const fontSize = Math.round(14 + ratio * 30);
+    ctx.font = `${fontSize}px -apple-system, sans-serif`;
+    const metrics = ctx.measureText(word);
+    const w = metrics.width + 8;
+    const h = fontSize + 8;
+
+    let placed_ok = false;
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const x = Math.random() * (W - w);
+      const y = Math.random() * (H - h);
+      if (!collides(x, y, w, h)) {
+        const rotate = (Math.random() - 0.5) * 0.3;
+        ctx.save();
+        ctx.translate(x + w / 2, y + h / 2);
+        ctx.rotate(rotate);
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.globalAlpha = 0.5 + ratio * 0.5;
+        ctx.font = `${fontSize}px -apple-system, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(word, 0, 0);
+        ctx.restore();
+        placed.push({ x, y, w, h });
+        placed_ok = true;
+        break;
+      }
+    }
+  });
+
+  cover.style.backgroundImage = `url(${canvas.toDataURL()})`;
 
   document.querySelector('.cover-title').textContent = meta.title;
   document.querySelector('.cover-subtitle').textContent = meta.subtitle;
@@ -543,7 +606,7 @@ async function init() {
   loader.classList.add('fade-out');
   setTimeout(() => loader.remove(), 600);
 
-  renderCover(data.meta);
+  renderCover(data.meta, data.entries);
   renderTimeline(data.entries);
   renderStats(data.stats, data.meta.subtitle);
   setupScrollAnimations();
