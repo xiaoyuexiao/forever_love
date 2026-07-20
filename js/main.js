@@ -269,11 +269,13 @@ function setupLightbox() {
 }
 
 // ========== 统计区渲染 ==========
-function renderStats(stats, firstDate) {
+function renderStats(stats, subtitle) {
   const grid = document.querySelector('.stats-grid');
 
-  // 计算天数
-  const days = Math.floor((new Date() - new Date(firstDate)) / (1000 * 60 * 60 * 24));
+  // 从 subtitle 解析起始日期（格式 "2023.02 - 2025.09"）
+  const match = subtitle.match(/(\d{4})\.(\d{2})/);
+  const startDate = match ? `${match[1]}-${match[2]}-01` : new Date().toISOString().slice(0, 10);
+  const days = Math.floor((new Date() - new Date(startDate)) / (1000 * 60 * 60 * 24));
 
   // 固定统计项
   const fixedStats = [
@@ -543,7 +545,7 @@ async function init() {
 
   renderCover(data.meta);
   renderTimeline(data.entries);
-  renderStats(data.stats, data.entries[0].date);
+  renderStats(data.stats, data.meta.subtitle);
   setupScrollAnimations();
   animateCounters();
   setupCursorTrail();
