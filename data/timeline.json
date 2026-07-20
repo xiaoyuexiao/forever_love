@@ -95,7 +95,14 @@
       {"text":"电瓶车","weight":32},
       {"text":"鞋子","weight":14},
       {"text":"猫猫","weight":20},
-      {"text":"狗子","weight":16}
+      {"text":"成都","weight":16},
+      {"text":"中江","weight":4},
+      {"text":"兰州","weight":2},
+      {"text":"重庆","weight":8},
+      {"text":"乐山","weight":3},
+      {"text":"峨眉山","weight":1},
+      {"text":"九寨沟","weight":5},
+      {"text":"阿坝","weight":6}
     ]
   },
   "entries": [
@@ -3499,17 +3506,9 @@
   ],
   "stats": {
     "days": 952,
-    "cities": 3,
+    "cities": 9,
     "photos": 499,
     "custom": [
-      {
-        "label": "电影",
-        "value": 42
-      },
-      {
-        "label": "旅行",
-        "value": 8
-      }
     ]
   }
 }
