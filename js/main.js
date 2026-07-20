@@ -103,7 +103,7 @@ function setupLightbox() {
     lightboxImg.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
   }
 
-  function showMedia() {
+  async function showMedia() {
     const seq = ++loadSeq;
     resetTransform();
     const item = currentMedia[currentIndex];
@@ -120,21 +120,19 @@ function setupLightbox() {
       lightboxVideo.src = item.src;
       lightboxVideo.play();
     } else {
-      // 预加载原图，加载完再显示
-      const preloader = new Image();
-      preloader.onload = () => {
+      if (PreloadManager.isLoaded(item.src)) {
+        // 已预加载，直接显示
+        spinner.classList.remove('show');
+        lightboxImg.src = item.src;
+        lightboxImg.style.display = 'block';
+      } else {
+        // 未加载，暂停后台预加载，优先加载此图
+        await PreloadManager.loadPriority(item.src);
         if (seq !== loadSeq) return; // 已切换到其他图片，忽略
         spinner.classList.remove('show');
         lightboxImg.src = item.src;
         lightboxImg.style.display = 'block';
-      };
-      preloader.onerror = () => {
-        if (seq !== loadSeq) return;
-        spinner.classList.remove('show');
-        lightboxImg.src = item.src;
-        lightboxImg.style.display = 'block';
-      };
-      preloader.src = item.src;
+      }
     }
   }
 
@@ -426,39 +424,54 @@ function setupMusic() {
   });
 }
 
-// ========== 图片预加载 ==========
-function preloadImage(url) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(url);
-    img.onerror = () => resolve(url);
-    img.src = url;
-  });
-}
+// ========== 图片预加载管理器 ==========
+const PreloadManager = {
+  loaded: new Set(),
+  queue: [],
+  paused: false,
+  running: false,
 
-function preloadImages(urls, onProgress) {
-  let loaded = 0;
-  const total = urls.length;
-  const concurrency = 6;
+  isLoaded(url) {
+    return this.loaded.has(url);
+  },
 
-  return new Promise((resolve) => {
-    if (total === 0) { resolve(); return; }
+  loadOne(url) {
+    return new Promise((resolve) => {
+      if (this.loaded.has(url)) { resolve(); return; }
+      const img = new Image();
+      img.onload = () => { this.loaded.add(url); resolve(); };
+      img.onerror = () => { this.loaded.add(url); resolve(); };
+      img.src = url;
+    });
+  },
 
-    let index = 0;
-    function next() {
-      if (index >= total) return;
-      const i = index++;
-      preloadImage(urls[i]).then(() => {
-        loaded++;
-        if (onProgress) onProgress(loaded, total);
-        if (loaded === total) resolve();
-        else next();
-      });
+  // 按顺序逐张预加载
+  async startSequential(urls) {
+    this.queue = urls.filter(u => !this.loaded.has(u));
+    this.running = true;
+    for (const url of this.queue) {
+      if (!this.running) break;
+      while (this.paused) {
+        await new Promise(r => setTimeout(r, 100));
+      }
+      if (!this.running) break;
+      await this.loadOne(url);
     }
+    this.running = false;
+  },
 
-    for (let c = 0; c < Math.min(concurrency, total); c++) next();
-  });
-}
+  // 优先加载某张图（用户点击查看时调用）
+  async loadPriority(url) {
+    if (this.loaded.has(url)) return;
+    this.paused = true;
+    await this.loadOne(url);
+    this.paused = false;
+  },
+
+  stop() {
+    this.running = false;
+  }
+};
 
 function collectImageUrls(entries) {
   const thumbs = [];
@@ -474,6 +487,34 @@ function collectImageUrls(entries) {
   return { thumbs, originals };
 }
 
+// ========== 并发预加载（仅用于首屏） ==========
+function preloadImagesConcurrent(urls, onProgress) {
+  let loaded = 0;
+  const total = urls.length;
+  const concurrency = 6;
+
+  return new Promise((resolve) => {
+    if (total === 0) { resolve(); return; }
+
+    let index = 0;
+    function next() {
+      if (index >= total) return;
+      const i = index++;
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        PreloadManager.loaded.add(urls[i]);
+        loaded++;
+        if (onProgress) onProgress(loaded, total);
+        if (loaded === total) resolve();
+        else next();
+      };
+      img.src = urls[i];
+    }
+
+    for (let c = 0; c < Math.min(concurrency, total); c++) next();
+  });
+}
+
 // ========== 初始化 ==========
 async function init() {
   const data = await loadData();
@@ -483,25 +524,20 @@ async function init() {
   const bar = document.getElementById('loader-bar');
   const text = document.getElementById('loader-text');
 
-  // 第一阶段：加载前 100 张缩略图 + 前 10 张原图
-  const phase1Thumbs = thumbs.slice(0, 100);
-  const phase1Orig = originals.slice(0, 10);
-  const phase1 = [...new Set([...phase1Thumbs, ...phase1Orig])];
+  // 首屏：并发加载前 100 张缩略图
+  const phase1 = thumbs.slice(0, 100);
   const phase1Total = phase1.length;
 
-  // 8 秒超时：到时间直接进入页面
   const timeout = new Promise((resolve) => setTimeout(resolve, 8000));
-  const loading = preloadImages(phase1, (loaded) => {
+  const loading = preloadImagesConcurrent(phase1, (loaded) => {
     const pct = Math.round((loaded / phase1Total) * 100);
     bar.style.width = pct + '%';
     text.textContent = `加载中 ${pct}%`;
   });
 
   await Promise.race([loading, timeout]);
-  // 超时则进度条补到 100%
   bar.style.width = '100%';
 
-  // 加载完成，隐藏加载屏，渲染页面
   loader.classList.add('fade-out');
   setTimeout(() => loader.remove(), 600);
 
@@ -514,11 +550,10 @@ async function init() {
   setupLightbox();
   setupMusic();
 
-  // 第二阶段：后台按时间线顺序预加载剩余图片
-  const remaining = [...new Set([...thumbs.slice(100), ...originals.slice(10)])].filter(
-    u => !phase1.includes(u)
-  );
-  preloadImages(remaining);
+  // 后台按时间线顺序逐张预加载：先缩略图，再原图
+  const remainingThumbs = thumbs.slice(100);
+  const allOriginals = originals;
+  PreloadManager.startSequential([...remainingThumbs, ...allOriginals]);
 }
 
 init();
