@@ -630,6 +630,7 @@ async function init() {
   setupScrollAnimations();
   animateCounters();
   setupCursorTrail();
+  setupFallingStars();
   setupLightbox();
   setupMusic();
 
@@ -637,6 +638,87 @@ async function init() {
   const remainingThumbs = thumbs.slice(100);
   const allOriginals = originals;
   PreloadManager.startSequential([...remainingThumbs, ...allOriginals]);
+}
+
+// ========== 星星坠落特效 ==========
+function setupFallingStars() {
+  const canvas = document.getElementById('stars-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const stars = [];
+  const maxStars = 40;
+
+  function createStar() {
+    return {
+      x: Math.random() * W,
+      y: -10,
+      size: 2 + Math.random() * 4,
+      speed: 0.3 + Math.random() * 0.8,
+      opacity: 0.4 + Math.random() * 0.6,
+      drift: (Math.random() - 0.5) * 0.3,
+      twinkle: Math.random() * Math.PI * 2
+    };
+  }
+
+  // 初始化一些星星分散在屏幕各处
+  for (let i = 0; i < 15; i++) {
+    const s = createStar();
+    s.y = Math.random() * H;
+    stars.push(s);
+  }
+
+  function drawStar(x, y, size, opacity) {
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+      const px = x + Math.cos(angle) * size;
+      const py = y + Math.sin(angle) * size;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+
+    // 随机新增星星
+    if (stars.length < maxStars && Math.random() < 0.03) {
+      stars.push(createStar());
+    }
+
+    for (let i = stars.length - 1; i >= 0; i--) {
+      const s = stars[i];
+      s.y += s.speed;
+      s.x += s.drift;
+      s.twinkle += 0.02;
+      const twinkleAlpha = s.opacity * (0.6 + 0.4 * Math.sin(s.twinkle));
+
+      drawStar(s.x, s.y, s.size, twinkleAlpha);
+
+      // 移除超出屏幕的星星
+      if (s.y > H + 10) {
+        stars.splice(i, 1);
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
 }
 
 init();
