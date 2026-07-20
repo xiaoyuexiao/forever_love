@@ -8,15 +8,20 @@ async function loadData() {
 function renderCover(meta, entries) {
   const cover = document.getElementById('cover');
 
-  // 从 content 提取词频
-  const text = entries.map(e => e.content).join('');
-  const segs = text.match(/[一-龥]{2,4}/g) || [];
-  const stopWords = new Set(['我们','一个','一起','但是','这个','时候','觉得','还是','就是','没有','已经','什么','他们','可以','不是','因为','所以','今天','一些','到了','很多','你们','我的','你的','他的','她的','看到','到了','然后','之后','以后','开始','出来','起来','回来','下去','上来','这是','那是','那些','这些','自己','大家','比较','可能','应该','知道','觉得','那么','这样','那样','怎么','为什么','什么样','喜欢','照片','拍了','分享']);
-  const freq = {};
-  segs.forEach(w => {
-    if (!stopWords.has(w)) freq[w] = (freq[w] || 0) + 1;
-  });
-  const words = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 80);
+  // 词云数据：优先使用配置，否则从 content 提取
+  let words;
+  if (meta.wordcloud && meta.wordcloud.length > 0) {
+    words = meta.wordcloud.map(w => [w.text, w.weight]);
+  } else {
+    const text = entries.map(e => e.content).join('');
+    const segs = text.match(/[一-龥]{2,4}/g) || [];
+    const stopWords = new Set(['我们','一个','一起','但是','这个','时候','觉得','还是','就是','没有','已经','什么','他们','可以','不是','因为','所以','今天','一些','到了','很多','你们','我的','你的','他的','她的','看到','到了','然后','之后','以后','开始','出来','起来','回来','下去','上来','这是','那是','那些','这些','自己','大家','比较','可能','应该','知道','觉得','那么','这样','那样','怎么','为什么','什么样','喜欢','照片','拍了','分享']);
+    const freq = {};
+    segs.forEach(w => {
+      if (!stopWords.has(w)) freq[w] = (freq[w] || 0) + 1;
+    });
+    words = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 80);
+  }
 
   // 绘制词云 canvas
   const canvas = document.createElement('canvas');
