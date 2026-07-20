@@ -44,9 +44,10 @@ function renderCover(meta, entries) {
     return false;
   }
 
-  // 内边距，让词云集中在中心
-  const padX = W * 0.2;
-  const padY = H * 0.2;
+  // 内边距，PC端词云集中在中心
+  const isPC = W > 768;
+  const padX = isPC ? W * 0.2 : 0;
+  const padY = isPC ? H * 0.2 : 0;
 
   words.forEach(([word, count], i) => {
     const ratio = 0.4 + (count / maxCount) * 0.6;
