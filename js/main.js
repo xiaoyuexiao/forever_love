@@ -44,6 +44,10 @@ function renderCover(meta, entries) {
     return false;
   }
 
+  // 内边距，让词云集中在中心
+  const padX = W * 0.2;
+  const padY = H * 0.2;
+
   words.forEach(([word, count], i) => {
     const ratio = 0.4 + (count / maxCount) * 0.6;
     const fontSize = Math.round(14 + ratio * 30);
@@ -53,9 +57,9 @@ function renderCover(meta, entries) {
     const h = fontSize + 8;
 
     let placed_ok = false;
-    for (let attempt = 0; attempt < 60; attempt++) {
-      const x = Math.random() * (W - w);
-      const y = Math.random() * (H - h);
+    for (let attempt = 0; attempt < 80; attempt++) {
+      const x = padX + Math.random() * (W - 2 * padX - w);
+      const y = padY + Math.random() * (H - 2 * padY - h);
       if (!collides(x, y, w, h)) {
         const rotate = (Math.random() - 0.5) * 0.3;
         ctx.save();
