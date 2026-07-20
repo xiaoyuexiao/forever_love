@@ -356,19 +356,13 @@ function setupLightbox() {
 }
 
 // ========== 统计区渲染 ==========
-function renderStats(stats, subtitle) {
+function renderStats(stats) {
   const grid = document.querySelector('.stats-grid');
-
-  // 从 subtitle 解析起始日期（格式 "2023.02 - 2025.09"）
-  const match = subtitle.match(/(\d{4})\.(\d{2})/);
-  const startDate = match ? `${match[1]}-${match[2]}-01` : new Date().toISOString().slice(0, 10);
-  const days = Math.floor((new Date() - new Date(startDate)) / (1000 * 60 * 60 * 24));
 
   // 固定统计项
   const fixedStats = [
-    { label: '在一起', value: days, suffix: '天' },
-    { label: '城市', value: stats.cities, suffix: '个' },
-    { label: '照片', value: stats.photos, suffix: '张' }
+    { label: '在一起', value: stats.days, suffix: '天' },
+    { label: '城市', value: stats.cities, suffix: '个' }
   ];
 
   // 自定义统计项
@@ -632,7 +626,7 @@ async function init() {
 
   renderCover(data.meta, data.entries);
   renderTimeline(data.entries);
-  renderStats(data.stats, data.meta.subtitle);
+  renderStats(data.stats);
   setupScrollAnimations();
   animateCounters();
   setupCursorTrail();
