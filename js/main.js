@@ -1,3 +1,11 @@
+// ========== 静态资源域名 ==========
+const ASSET_BASE = 'https://leexiao.oss-cn-shanghai.aliyuncs.com/';
+
+function assetUrl(path) {
+  if (!path || path.startsWith('http')) return path;
+  return ASSET_BASE + path;
+}
+
 // ========== 数据加载 ==========
 async function loadData() {
   const response = await fetch('data/timeline.json');
@@ -116,14 +124,14 @@ function renderTimeline(entries) {
       mediaHTML += entry.media.map(m => {
         if (m.type === 'video') {
           return `<div class="media-item">
-            <video poster="${m.poster || ''}" preload="metadata">
-              <source src="${m.src}" type="video/mp4">
+            <video poster="${assetUrl(m.poster) || ''}" preload="metadata">
+              <source src="${assetUrl(m.src)}" type="video/mp4">
             </video>
             <span class="play-icon">&#9654;</span>
           </div>`;
         }
         return `<div class="media-item">
-          <img src="${m.thumb || m.src}" data-full="${m.src}" alt="${m.alt || ''}" loading="lazy" decoding="async" class="clickable-img">
+          <img src="${assetUrl(m.thumb || m.src)}" data-full="${assetUrl(m.src)}" alt="${m.alt || ''}" loading="lazy" decoding="async" class="clickable-img">
         </div>`;
       }).join('');
       mediaHTML += '</div>';
@@ -132,7 +140,7 @@ function renderTimeline(entries) {
     // 节点显示第一张图片
     const firstImage = entry.media && entry.media.find(m => m.type === 'image');
     const nodeHTML = firstImage
-      ? `<div class="entry-node"><img src="${firstImage.thumb || firstImage.src}" alt="" loading="lazy" decoding="async" class="node-thumb"></div>`
+      ? `<div class="entry-node"><img src="${assetUrl(firstImage.thumb || firstImage.src)}" alt="" loading="lazy" decoding="async" class="node-thumb"></div>`
       : `<div class="entry-node"></div>`;
 
     entryEl.innerHTML = `
@@ -562,8 +570,8 @@ function collectImageUrls(entries) {
   entries.forEach(e => {
     e.media.forEach(m => {
       if (m.type === 'image') {
-        thumbs.push(m.thumb || m.src);
-        originals.push(m.src);
+        thumbs.push(assetUrl(m.thumb || m.src));
+        originals.push(assetUrl(m.src));
       }
     });
   });
