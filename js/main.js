@@ -561,8 +561,8 @@ function setupScrollThumbLoader() {
     imgs.forEach(img => {
       const src = img.dataset.src;
       if (src) {
+        img.removeAttribute('data-src');
         img.src = src;
-        PreloadManager.loadOne(src);
       }
     });
   }
@@ -601,6 +601,16 @@ function setupScrollThumbLoader() {
 
   // 首次加载当前视口及下方 2 个卡片
   checkEntries();
+
+  // 延迟兜底：确保视口内条目都已加载（处理移动端 observer 未触发的情况）
+  setTimeout(() => {
+    entries.forEach(entry => {
+      const rect = entry.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 2) {
+        loadEntryThumbs(entry);
+      }
+    });
+  }, 500);
 }
 
 // ========== 并发预加载（仅用于首屏） ==========
