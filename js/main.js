@@ -130,8 +130,10 @@ function renderTimeline(entries) {
             <span class="play-icon">&#9654;</span>
           </div>`;
         }
+        const thumbUrl = assetUrl(m.thumb || m.src);
+        const fullUrl = assetUrl(m.src);
         return `<div class="media-item">
-          <img data-src="${assetUrl(m.thumb || m.src)}" data-full="${assetUrl(m.src)}" alt="${m.alt || ''}" decoding="async" class="clickable-img">
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="${thumbUrl}" data-full="${fullUrl}" alt="${m.alt || ''}" decoding="async" class="clickable-img">
         </div>`;
       }).join('');
       mediaHTML += '</div>';
