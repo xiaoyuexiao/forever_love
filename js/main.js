@@ -518,9 +518,6 @@ function setupMusic() {
 // ========== 图片预加载管理器 ==========
 const PreloadManager = {
   loaded: new Set(),
-  queue: [],
-  paused: false,
-  running: false,
 
   isLoaded(url) {
     return this.loaded.has(url);
@@ -536,46 +533,73 @@ const PreloadManager = {
     });
   },
 
-  // 按顺序逐张预加载
-  async startSequential(urls) {
-    this.queue = urls.filter(u => !this.loaded.has(u));
-    this.running = true;
-    for (const url of this.queue) {
-      if (!this.running) break;
-      while (this.paused) {
-        await new Promise(r => setTimeout(r, 100));
-      }
-      if (!this.running) break;
-      await this.loadOne(url);
-    }
-    this.running = false;
-  },
-
   // 优先加载某张图（用户点击查看时调用）
   async loadPriority(url) {
     if (this.loaded.has(url)) return;
-    this.paused = true;
     await this.loadOne(url);
-    this.paused = false;
-  },
-
-  stop() {
-    this.running = false;
   }
 };
 
-function collectImageUrls(entries) {
-  const thumbs = [];
-  const originals = [];
-  entries.forEach(e => {
-    e.media.forEach(m => {
-      if (m.type === 'image') {
-        thumbs.push(assetUrl(m.thumb || m.src));
-        originals.push(assetUrl(m.src));
+// ========== 滚动式缩略图预加载 ==========
+function setupScrollThumbLoader() {
+  const entries = document.querySelectorAll('.entry');
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  function getLoadRange() {
+    const vh = window.innerHeight;
+    // 当前视口 + 下方 2 个卡片的高度范围
+    const scrollTop = window.scrollY;
+    const loadUntil = scrollTop + vh * 3;
+    return { scrollTop, loadUntil };
+  }
+
+  function loadEntryThumbs(entry) {
+    if (entry.dataset.thumbsLoaded) return;
+    entry.dataset.thumbsLoaded = '1';
+    const imgs = entry.querySelectorAll('.media-item img[data-full]');
+    imgs.forEach(img => {
+      const src = img.src;
+      if (src && !PreloadManager.loaded.has(src)) {
+        PreloadManager.loadOne(src);
       }
     });
-  });
-  return { thumbs, originals };
+  }
+
+  function checkEntries() {
+    const { scrollTop, loadUntil } = getLoadRange();
+    entries.forEach(entry => {
+      const rect = entry.getBoundingClientRect();
+      const entryTop = rect.top + scrollTop;
+      if (entryTop < loadUntil) {
+        loadEntryThumbs(entry);
+      }
+    });
+  }
+
+  // 用 IntersectionObserver 检测进入范围的条目
+  const observer = new IntersectionObserver((observed) => {
+    observed.forEach(e => {
+      if (e.isIntersecting) {
+        loadEntryThumbs(e.target);
+      }
+    });
+  }, { rootMargin: '200% 0px' });
+
+  entries.forEach(entry => observer.observe(entry));
+
+  // 滚动时加载下方 2 个卡片
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      checkEntries();
+      ticking = false;
+    });
+  }, { passive: true });
+
+  // 首次加载当前视口附近
+  checkEntries();
 }
 
 // ========== 并发预加载（仅用于首屏） ==========
@@ -609,14 +633,21 @@ function preloadImagesConcurrent(urls, onProgress) {
 // ========== 初始化 ==========
 async function init() {
   const data = await loadData();
-  const { thumbs, originals } = collectImageUrls(data.entries);
+
+  // 收集所有缩略图 URL（用于首屏加载）
+  const allThumbs = [];
+  data.entries.forEach(e => {
+    e.media.forEach(m => {
+      if (m.type === 'image') allThumbs.push(assetUrl(m.thumb || m.src));
+    });
+  });
 
   const loader = document.getElementById('loader');
   const bar = document.getElementById('loader-bar');
   const text = document.getElementById('loader-text');
 
   // 首屏：并发加载前 100 张缩略图
-  const phase1 = thumbs.slice(0, 100);
+  const phase1 = allThumbs.slice(0, 100);
   const phase1Total = phase1.length;
 
   const timeout = new Promise((resolve) => setTimeout(resolve, 8000));
@@ -642,10 +673,8 @@ async function init() {
   setupLightbox();
   setupMusic();
 
-  // 后台按时间线顺序逐张预加载：先缩略图，再原图
-  const remainingThumbs = thumbs.slice(100);
-  const allOriginals = originals;
-  PreloadManager.startSequential([...remainingThumbs, ...allOriginals]);
+  // 滚动式缩略图预加载
+  setupScrollThumbLoader();
 }
 
 // ========== 星星坠落特效 ==========
