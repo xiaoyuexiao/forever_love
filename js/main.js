@@ -404,7 +404,7 @@ function setupScrollAnimations() {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.01 });
 
   // 观察时间线条目
   document.querySelectorAll('.entry').forEach(el => observer.observe(el));
