@@ -1,5 +1,5 @@
 // ========== 静态资源域名 ==========
-const ASSET_BASE = 'https://leexiao.oss-cn-shanghai.aliyuncs.com/';
+const ASSET_BASE = 'http://img.leexiaocll.xyz/';
 
 function assetUrl(path) {
   if (!path || path.startsWith('http')) return path;
