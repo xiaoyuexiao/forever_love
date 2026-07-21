@@ -131,7 +131,7 @@ function renderTimeline(entries) {
           </div>`;
         }
         return `<div class="media-item">
-          <img src="${assetUrl(m.thumb || m.src)}" data-full="${assetUrl(m.src)}" alt="${m.alt || ''}" loading="lazy" decoding="async" class="clickable-img">
+          <img data-src="${assetUrl(m.thumb || m.src)}" data-full="${assetUrl(m.src)}" alt="${m.alt || ''}" decoding="async" class="clickable-img">
         </div>`;
       }).join('');
       mediaHTML += '</div>';
@@ -557,10 +557,11 @@ function setupScrollThumbLoader() {
   function loadEntryThumbs(entry) {
     if (entry.dataset.thumbsLoaded) return;
     entry.dataset.thumbsLoaded = '1';
-    const imgs = entry.querySelectorAll('.media-item img[data-full]');
+    const imgs = entry.querySelectorAll('.media-item img[data-src]');
     imgs.forEach(img => {
-      const src = img.src;
-      if (src && !PreloadManager.loaded.has(src)) {
+      const src = img.dataset.src;
+      if (src) {
+        img.src = src;
         PreloadManager.loadOne(src);
       }
     });
@@ -584,7 +585,7 @@ function setupScrollThumbLoader() {
         loadEntryThumbs(e.target);
       }
     });
-  }, { rootMargin: '200% 0px' });
+  }, { rootMargin: '500% 0px' });
 
   entries.forEach(entry => observer.observe(entry));
 
@@ -598,7 +599,7 @@ function setupScrollThumbLoader() {
     });
   }, { passive: true });
 
-  // 首次加载当前视口附近
+  // 首次加载当前视口及下方 2 个卡片
   checkEntries();
 }
 
