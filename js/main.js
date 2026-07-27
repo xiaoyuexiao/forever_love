@@ -72,33 +72,52 @@ function renderCover(meta, entries) {
 
   // 内边距
   const isPC = W > 768;
-  const padX = isPC ? W * 0.1 : 0;
-  const padY = isPC ? H * 0.1 : 0;
+  const padX = isPC ? W * 0.08 : 0;
+  const padY = isPC ? H * 0.08 : 0;
   const areaX = padX;
   const areaY = padY;
   const areaW = W - 2 * padX;
   const areaH = H - 2 * padY;
-  const centerX = areaX + areaW / 2;
-  const centerY = areaY + areaH / 2;
 
   // 按权重排序，高权重优先放置
   words.sort((a, b) => b[1] - a[1]);
 
-  // 螺旋式放置：从中心向外扩展
-  function spiralPlace(w, h) {
-    const maxR = Math.max(areaW, areaH) * 0.6;
-    const step = 4;
-    for (let r = 0; r < maxR; r += step) {
-      const angleStep = r < 1 ? 1 : step / r;
-      for (let a = 0; a < Math.PI * 2; a += angleStep) {
-        const x = centerX + r * Math.cos(a) - w / 2;
-        const y = centerY + r * Math.sin(a) * 0.7 - h / 2;
-        if (x >= areaX && x + w <= areaX + areaW &&
-            y >= areaY && y + h <= areaY + areaH &&
-            !collides(x, y, w, h)) {
-          return { x, y };
-        }
+  // 网格候选位置：把区域分成网格，在每个格子里随机选一个点
+  const gridCols = 8;
+  const gridRows = 6;
+  const cellW = areaW / gridCols;
+  const cellH = areaH / gridRows;
+  const candidates = [];
+  for (let gy = 0; gy < gridRows; gy++) {
+    for (let gx = 0; gx < gridCols; gx++) {
+      // 在格子内随机偏移
+      const cx = areaX + gx * cellW + cellW * 0.2 + Math.random() * cellW * 0.6;
+      const cy = areaY + gy * cellH + cellH * 0.2 + Math.random() * cellH * 0.6;
+      candidates.push({ x: cx, y: cy });
+    }
+  }
+  // 打乱顺序
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  function gridPlace(w, h) {
+    // 遍历候选点，找到第一个能放下的位置
+    for (const c of candidates) {
+      const x = c.x - w / 2;
+      const y = c.y - h / 2;
+      if (x >= areaX && x + w <= areaX + areaW &&
+          y >= areaY && y + h <= areaY + areaH &&
+          !collides(x, y, w, h)) {
+        return { x, y };
       }
+    }
+    // 兜底：随机尝试
+    for (let i = 0; i < 100; i++) {
+      const x = areaX + Math.random() * (areaW - w);
+      const y = areaY + Math.random() * (areaH - h);
+      if (!collides(x, y, w, h)) return { x, y };
     }
     return null;
   }
@@ -108,10 +127,10 @@ function renderCover(meta, entries) {
     const fontSize = Math.round(12 + ratio * 22);
     ctx.font = `${fontSize}px -apple-system, sans-serif`;
     const metrics = ctx.measureText(word);
-    const w = metrics.width + 14;
-    const h = fontSize + 14;
+    const w = metrics.width + 16;
+    const h = fontSize + 16;
 
-    const pos = spiralPlace(w, h);
+    const pos = gridPlace(w, h);
     if (pos) {
       const rotate = (Math.random() - 0.5) * 0.3;
       ctx.save();
