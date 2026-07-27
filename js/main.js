@@ -70,42 +70,61 @@ function renderCover(meta, entries) {
     return false;
   }
 
-  // 内边距，PC端词云集中在中心
+  // 内边距
   const isPC = W > 768;
-  const padX = isPC ? W * 0.15 : 0;
-  const padY = isPC ? H * 0.15 : 0;
+  const padX = isPC ? W * 0.1 : 0;
+  const padY = isPC ? H * 0.1 : 0;
+  const areaX = padX;
+  const areaY = padY;
+  const areaW = W - 2 * padX;
+  const areaH = H - 2 * padY;
+  const centerX = areaX + areaW / 2;
+  const centerY = areaY + areaH / 2;
 
   // 按权重排序，高权重优先放置
   words.sort((a, b) => b[1] - a[1]);
 
+  // 螺旋式放置：从中心向外扩展
+  function spiralPlace(w, h) {
+    const maxR = Math.max(areaW, areaH) * 0.6;
+    const step = 4;
+    for (let r = 0; r < maxR; r += step) {
+      const angleStep = r < 1 ? 1 : step / r;
+      for (let a = 0; a < Math.PI * 2; a += angleStep) {
+        const x = centerX + r * Math.cos(a) - w / 2;
+        const y = centerY + r * Math.sin(a) * 0.7 - h / 2;
+        if (x >= areaX && x + w <= areaX + areaW &&
+            y >= areaY && y + h <= areaY + areaH &&
+            !collides(x, y, w, h)) {
+          return { x, y };
+        }
+      }
+    }
+    return null;
+  }
+
   words.forEach(([word, count], i) => {
     const ratio = 0.3 + (count / maxCount) * 0.7;
-    const fontSize = Math.round(12 + ratio * 24);
+    const fontSize = Math.round(12 + ratio * 22);
     ctx.font = `${fontSize}px -apple-system, sans-serif`;
     const metrics = ctx.measureText(word);
     const w = metrics.width + 6;
     const h = fontSize + 6;
 
-    let placed_ok = false;
-    for (let attempt = 0; attempt < 200; attempt++) {
-      const x = padX + Math.random() * (W - 2 * padX - w);
-      const y = padY + Math.random() * (H - 2 * padY - h);
-      if (!collides(x, y, w, h)) {
-        const rotate = (Math.random() - 0.5) * 0.3;
-        ctx.save();
-        ctx.translate(x + w / 2, y + h / 2);
-        ctx.rotate(rotate);
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.globalAlpha = 0.5 + ratio * 0.5;
-        ctx.font = `${fontSize}px -apple-system, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(word, 0, 0);
-        ctx.restore();
-        placed.push({ x, y, w, h });
-        placed_ok = true;
-        break;
-      }
+    const pos = spiralPlace(w, h);
+    if (pos) {
+      const rotate = (Math.random() - 0.5) * 0.3;
+      ctx.save();
+      ctx.translate(pos.x + w / 2, pos.y + h / 2);
+      ctx.rotate(rotate);
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.globalAlpha = 0.5 + ratio * 0.5;
+      ctx.font = `${fontSize}px -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(word, 0, 0);
+      ctx.restore();
+      placed.push({ x: pos.x, y: pos.y, w, h });
     }
   });
 
