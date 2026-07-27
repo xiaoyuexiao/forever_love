@@ -108,8 +108,8 @@ function renderCover(meta, entries) {
     const fontSize = Math.round(12 + ratio * 22);
     ctx.font = `${fontSize}px -apple-system, sans-serif`;
     const metrics = ctx.measureText(word);
-    const w = metrics.width + 6;
-    const h = fontSize + 6;
+    const w = metrics.width + 14;
+    const h = fontSize + 14;
 
     const pos = spiralPlace(w, h);
     if (pos) {
