@@ -75,16 +75,19 @@ function renderCover(meta, entries) {
   const padX = isPC ? W * 0.15 : 0;
   const padY = isPC ? H * 0.15 : 0;
 
+  // 按权重排序，高权重优先放置
+  words.sort((a, b) => b[1] - a[1]);
+
   words.forEach(([word, count], i) => {
-    const ratio = 0.4 + (count / maxCount) * 0.6;
-    const fontSize = Math.round(14 + ratio * 30);
+    const ratio = 0.3 + (count / maxCount) * 0.7;
+    const fontSize = Math.round(12 + ratio * 24);
     ctx.font = `${fontSize}px -apple-system, sans-serif`;
     const metrics = ctx.measureText(word);
-    const w = metrics.width + 8;
-    const h = fontSize + 8;
+    const w = metrics.width + 6;
+    const h = fontSize + 6;
 
     let placed_ok = false;
-    for (let attempt = 0; attempt < 80; attempt++) {
+    for (let attempt = 0; attempt < 200; attempt++) {
       const x = padX + Math.random() * (W - 2 * padX - w);
       const y = padY + Math.random() * (H - 2 * padY - h);
       if (!collides(x, y, w, h)) {
