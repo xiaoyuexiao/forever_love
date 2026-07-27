@@ -745,31 +745,33 @@ function setupFallingStars() {
   window.addEventListener('resize', resize);
 
   const stars = [];
-  const maxStars = 40;
+  const maxStars = 80;
+  const starColors = ['#FFD700', '#FFA500', '#FF69B4', '#FFB6C1', '#87CEEB', '#FFFFFF'];
 
   function createStar() {
     return {
       x: Math.random() * W,
       y: -10,
-      size: 2 + Math.random() * 4,
-      speed: 0.3 + Math.random() * 0.8,
-      opacity: 0.4 + Math.random() * 0.6,
-      drift: (Math.random() - 0.5) * 0.3,
-      twinkle: Math.random() * Math.PI * 2
+      size: 3 + Math.random() * 5,
+      speed: 0.4 + Math.random() * 1.0,
+      opacity: 0.5 + Math.random() * 0.5,
+      drift: (Math.random() - 0.5) * 0.4,
+      twinkle: Math.random() * Math.PI * 2,
+      color: starColors[Math.floor(Math.random() * starColors.length)]
     };
   }
 
   // 初始化一些星星分散在屏幕各处
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 30; i++) {
     const s = createStar();
     s.y = Math.random() * H;
     stars.push(s);
   }
 
-  function drawStar(x, y, size, opacity) {
+  function drawStar(x, y, size, opacity, color) {
     ctx.save();
     ctx.globalAlpha = opacity;
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = color;
     ctx.beginPath();
     for (let i = 0; i < 5; i++) {
       const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
@@ -787,7 +789,7 @@ function setupFallingStars() {
     ctx.clearRect(0, 0, W, H);
 
     // 随机新增星星
-    if (stars.length < maxStars && Math.random() < 0.03) {
+    if (stars.length < maxStars && Math.random() < 0.08) {
       stars.push(createStar());
     }
 
@@ -798,7 +800,7 @@ function setupFallingStars() {
       s.twinkle += 0.02;
       const twinkleAlpha = s.opacity * (0.6 + 0.4 * Math.sin(s.twinkle));
 
-      drawStar(s.x, s.y, s.size, twinkleAlpha);
+      drawStar(s.x, s.y, s.size, twinkleAlpha, s.color);
 
       // 移除超出屏幕的星星
       if (s.y > H + 10) {
