@@ -521,6 +521,22 @@ body {
   color: var(--color-text-light);
 }
 
+/* ========== 备案信息 ========== */
+.footer {
+  text-align: center;
+  padding: 20px;
+}
+
+.footer a {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: var(--color-text);
+}
+
 /* ========== 响应式 ========== */
 @media (max-width: 768px) {
   .cover-title {
