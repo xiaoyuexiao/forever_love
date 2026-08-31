@@ -171,6 +171,21 @@ function renderTimeline(entries) {
             <span class="play-icon">&#9654;</span>
           </div>`;
         }
+        if (m.type === 'audio') {
+          const audioId = 'audio_' + Math.random().toString(36).substr(2, 9);
+          return `<div class="audio-player" data-audio-id="${audioId}">
+            <button class="audio-btn" onclick="toggleAudio('${audioId}', this)">&#9654;</button>
+            <div class="audio-info">
+              <span class="audio-name">${m.name || '录音'}</span>
+              <div class="audio-progress">
+                <div class="audio-progress-bar" style="width: 0%"></div>
+              </div>
+            </div>
+            <audio id="${audioId}" preload="metadata">
+              <source src="${assetUrl(m.src)}" type="audio/mpeg">
+            </audio>
+          </div>`;
+        }
         const thumbUrl = assetUrl(m.thumb || m.src);
         const fullUrl = assetUrl(m.src);
         return `<div class="media-item">
@@ -533,6 +548,54 @@ function setupCursorTrail() {
   }
 
   animate();
+}
+
+// ========== 录音播放 ==========
+function toggleAudio(audioId, btn) {
+  const audio = document.getElementById(audioId);
+  const player = btn.closest('.audio-player');
+  const progressBar = player.querySelector('.audio-progress-bar');
+
+  // 暂停其他正在播放的录音
+  document.querySelectorAll('.audio-player').forEach(p => {
+    if (p !== player) {
+      const otherAudio = p.querySelector('audio');
+      const otherBtn = p.querySelector('.audio-btn');
+      if (otherAudio && !otherAudio.paused) {
+        otherAudio.pause();
+        otherBtn.innerHTML = '&#9654;';
+      }
+    }
+  });
+
+  if (audio.paused) {
+    audio.play();
+    btn.innerHTML = '&#10074;&#10074;';
+  } else {
+    audio.pause();
+    btn.innerHTML = '&#9654;';
+  }
+
+  audio.ontimeupdate = () => {
+    if (audio.duration) {
+      progressBar.style.width = (audio.currentTime / audio.duration * 100) + '%';
+    }
+  };
+
+  audio.onended = () => {
+    btn.innerHTML = '&#9654;';
+    progressBar.style.width = '0%';
+  };
+
+  // 点击进度条跳转
+  const progressWrap = player.querySelector('.audio-progress');
+  progressWrap.onclick = (e) => {
+    if (!audio.duration) return;
+    const rect = progressWrap.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = ratio * audio.duration;
+    progressBar.style.width = (ratio * 100) + '%';
+  };
 }
 
 // ========== 背景音乐 ==========
