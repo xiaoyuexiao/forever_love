@@ -747,9 +747,169 @@ function preloadImagesConcurrent(urls, onProgress) {
   });
 }
 
+// ========== 问答验证 ==========
+function setupGate(questions) {
+  return new Promise((resolve) => {
+    const gate = document.getElementById('gate');
+    const questionEl = document.getElementById('gate-question');
+    const inputArea = document.getElementById('gate-input-area');
+    const btn = document.getElementById('gate-btn');
+    const error = document.getElementById('gate-error');
+    const changeBtn = document.getElementById('gate-change');
+
+    let currentQuestion = null;
+    let getAnswer;
+
+    function renderQuestion(item) {
+      currentQuestion = item;
+      questionEl.textContent = item.q;
+      error.classList.remove('show');
+      changeBtn.style.display = 'none';
+
+      if (item.type === 'date') {
+        inputArea.innerHTML = `
+          <div class="gate-date">
+            <select id="gate-month" class="gate-select">
+              <option value="">月</option>
+              ${Array.from({length: 12}, (_, i) => `<option value="${String(i+1).padStart(2,'0')}">${i+1}月</option>`).join('')}
+            </select>
+            <span class="gate-date-sep">-</span>
+            <select id="gate-day" class="gate-select">
+              <option value="">日</option>
+              ${Array.from({length: 31}, (_, i) => `<option value="${String(i+1).padStart(2,'0')}">${i+1}日</option>`).join('')}
+            </select>
+          </div>`;
+        getAnswer = () => {
+          const m = document.getElementById('gate-month').value;
+          const d = document.getElementById('gate-day').value;
+          if (!m || !d) return '';
+          return `${m}-${d}`;
+        };
+      } else if (item.type === 'lunar') {
+        const lunarMonths = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
+        const lunarDays = [
+          '初一','初二','初三','初四','初五','初六','初七','初八','初九','初十',
+          '十一','十二','十三','十四','十五','十六','十七','十八','十九','二十',
+          '廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'
+        ];
+        inputArea.innerHTML = `
+          <div class="gate-date">
+            <select id="gate-month" class="gate-select">
+              <option value="">月</option>
+              ${lunarMonths.map((m, i) => `<option value="${String(i+1).padStart(2,'0')}">${m}</option>`).join('')}
+            </select>
+            <span class="gate-date-sep">-</span>
+            <select id="gate-day" class="gate-select">
+              <option value="">日</option>
+              ${lunarDays.map((d, i) => `<option value="${String(i+1).padStart(2,'0')}">${d}</option>`).join('')}
+            </select>
+          </div>`;
+        getAnswer = () => {
+          const m = document.getElementById('gate-month').value;
+          const d = document.getElementById('gate-day').value;
+          if (!m || !d) return '';
+          return `${m}-${d}`;
+        };
+      } else if (item.type === 'year') {
+        const currentYear = new Date().getFullYear();
+        const startYear = item.startYear || 2000;
+        const endYear = item.endYear || currentYear;
+        inputArea.innerHTML = `
+          <div class="gate-date">
+            <select id="gate-year" class="gate-select">
+              <option value="">年</option>
+              ${Array.from({length: endYear - startYear + 1}, (_, i) => `<option value="${endYear - i}">${endYear - i}</option>`).join('')}
+            </select>
+            <span class="gate-date-sep">-</span>
+            <select id="gate-month" class="gate-select">
+              <option value="">月</option>
+              ${Array.from({length: 12}, (_, i) => `<option value="${String(i+1).padStart(2,'0')}">${i+1}月</option>`).join('')}
+            </select>
+            <span class="gate-date-sep">-</span>
+            <select id="gate-day" class="gate-select">
+              <option value="">日</option>
+              ${Array.from({length: 31}, (_, i) => `<option value="${String(i+1).padStart(2,'0')}">${i+1}日</option>`).join('')}
+            </select>
+          </div>`;
+        getAnswer = () => {
+          const y = document.getElementById('gate-year').value;
+          const m = document.getElementById('gate-month').value;
+          const d = document.getElementById('gate-day').value;
+          if (!y) return '';
+          if (m && d) return `${y}-${m}-${d}`;
+          if (m) return `${y}-${m}`;
+          return y;
+        };
+      } else if (item.type === 'number') {
+        inputArea.innerHTML = `<input class="gate-input" id="gate-input" type="number" placeholder="输入数字" autocomplete="off">`;
+        getAnswer = () => document.getElementById('gate-input').value.trim();
+      } else {
+        inputArea.innerHTML = `<input class="gate-input" id="gate-input" type="text" placeholder="输入答案" autocomplete="off">`;
+        getAnswer = () => document.getElementById('gate-input').value.trim().toLowerCase();
+      }
+
+      const firstInput = inputArea.querySelector('input, select');
+      if (firstInput) firstInput.focus();
+    }
+
+    function pickQuestion() {
+      if (questions.length <= 1) return questions[0];
+      let next;
+      do {
+        next = questions[Math.floor(Math.random() * questions.length)];
+      } while (next === currentQuestion && questions.length > 1);
+      return next;
+    }
+
+    // 初始随机选一个
+    renderQuestion(pickQuestion());
+
+    function check() {
+      const answer = getAnswer();
+      if (!answer) {
+        error.classList.add('show');
+        changeBtn.style.display = 'inline-block';
+        return;
+      }
+      const correct = currentQuestion.a.trim().toLowerCase();
+      const accepted = correct.split('|').map(s => s.trim());
+      if (accepted.includes(answer)) {
+        gate.classList.add('fade-out');
+        setTimeout(() => { gate.remove(); resolve(); }, 600);
+      } else {
+        error.classList.add('show');
+        changeBtn.style.display = 'inline-block';
+        if (currentQuestion.type === 'date' || currentQuestion.type === 'lunar' || currentQuestion.type === 'year') {
+          if (document.getElementById('gate-year')) document.getElementById('gate-year').value = '';
+          if (document.getElementById('gate-month')) document.getElementById('gate-month').value = '';
+          if (document.getElementById('gate-day')) document.getElementById('gate-day').value = '';
+        } else {
+          const input = document.getElementById('gate-input');
+          if (input) { input.value = ''; input.focus(); }
+        }
+      }
+    }
+
+    function changeQuestion() {
+      renderQuestion(pickQuestion());
+    }
+
+    btn.addEventListener('click', check);
+    changeBtn.addEventListener('click', changeQuestion);
+    inputArea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') check();
+    });
+  });
+}
+
 // ========== 初始化 ==========
 async function init() {
   const data = await loadData();
+
+  // 问答验证（必须通过才继续）
+  if (data.questions && data.questions.length > 0) {
+    await setupGate(data.questions);
+  }
 
   // 收集所有缩略图 URL（用于首屏加载）
   const allThumbs = [];
